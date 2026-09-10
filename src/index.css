@@ -440,7 +440,7 @@ main,
 
 .pathway {
   display: grid;
-  grid-template-columns: repeat(7, minmax(120px, 1fr));
+  grid-template-columns: repeat(8, minmax(112px, 1fr));
   gap: 0;
   margin: 24px 0 16px;
   padding: 0;

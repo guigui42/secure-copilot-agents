@@ -11,6 +11,7 @@ GitHub Copilot coding agents.
 - Enterprise managed permissions for Copilot CLI, the Copilot app, and VS Code
   sessions using Agent Host.
 - Local sandboxing, ephemeral cloud runners, and credential isolation.
+- Content exclusions and untrusted-context or prompt-injection boundaries.
 - MCP server, plugin, and hook governance.
 - Cloud-agent firewall, Agents secrets, workflow approvals, and setup files.
 - Rulesets, CODEOWNERS, security checks, audit events, and OpenTelemetry.

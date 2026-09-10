@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { modules, sources } from './content'
+import { modules, riskScenarios, sources } from './content'
 
 describe('security content', () => {
   it('keeps source references valid', () => {
@@ -26,5 +26,12 @@ describe('security content', () => {
   it('uses unique module and source identifiers', () => {
     expect(new Set(modules.map((module) => module.id)).size).toBe(modules.length)
     expect(new Set(sources.map((source) => source.id)).size).toBe(sources.length)
+  })
+
+  it('covers content exclusion and untrusted-input risks', () => {
+    expect(modules.some((module) => module.id === 'context')).toBe(true)
+    expect(
+      riskScenarios.some((scenario) => scenario.id === 'prompt-injection'),
+    ).toBe(true)
   })
 })

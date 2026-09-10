@@ -9,6 +9,7 @@ export type Strength =
 
 export type LayerId =
   | 'scope'
+  | 'context'
   | 'identity'
   | 'permission'
   | 'isolation'
@@ -107,6 +108,12 @@ export const sources: Source[] = [
     category: 'GitHub Docs',
   },
   {
+    id: 'content-exclusion',
+    title: 'Content exclusion for GitHub Copilot',
+    url: 'https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/context/content-exclusion',
+    category: 'GitHub Docs',
+  },
+  {
     id: 'sandbox-config',
     title: 'Configuring local sandbox settings',
     url: 'https://docs.github.com/en/enterprise-cloud@latest/copilot/how-tos/cloud-and-local-sandboxes/configuring-local-sandbox-settings',
@@ -122,6 +129,12 @@ export const sources: Source[] = [
     id: 'cloud-guardrails',
     title: 'Building guardrails for GitHub Copilot cloud agent',
     url: 'https://docs.github.com/en/enterprise-cloud@latest/copilot/tutorials/cloud-agent/build-guardrails',
+    category: 'GitHub Docs',
+  },
+  {
+    id: 'cloud-risks',
+    title: 'Risks and mitigations for GitHub Copilot cloud agent',
+    url: 'https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/agents/cloud-agent/risks-and-mitigations',
     category: 'GitHub Docs',
   },
   {
@@ -200,6 +213,13 @@ export const securityLayers: SecurityLayer[] = [
     shortLabel: 'Identity',
     description: 'Use short-lived credentials with only the required repositories and permissions.',
     surfaces: ['cli', 'app', 'vscode', 'cloud'],
+  },
+  {
+    id: 'context',
+    label: 'Context boundary',
+    shortLabel: 'Context',
+    description: 'Exclude sensitive files and treat external context as untrusted input.',
+    surfaces: ['cli', 'app', 'vscode'],
   },
   {
     id: 'permission',
@@ -292,6 +312,17 @@ export const riskScenarios: RiskScenario[] = [
     primary: ['repository', 'scope'],
     supporting: ['tool-policy', 'observability'],
     gaps: {},
+  },
+  {
+    id: 'prompt-injection',
+    label: 'Untrusted instructions',
+    description:
+      'An issue, pull request comment, MCP response, or fetched page contains instructions designed to redirect the agent or expose data.',
+    primary: ['scope', 'tool-policy', 'repository'],
+    supporting: ['context', 'identity', 'isolation', 'observability'],
+    gaps: {
+      vscode: ['context'],
+    },
   },
 ]
 
@@ -477,8 +508,40 @@ export const modules: Module[] = [
     sourceIds: ['cloud-guardrails', 'governing-agents'],
   },
   {
-    id: 'identity',
+    id: 'context',
     step: 2,
+    title: 'Protect sensitive context',
+    summary: 'Reduce what Copilot can use as context and treat external content as untrusted data.',
+    risk:
+      'Sensitive files can enter prompts or responses, while malicious issues, pull request text, MCP output, and web content can try to redirect an agent.',
+    surfaces: ['cli', 'app', 'vscode'],
+    strengths: ['conditional', 'guidance'],
+    adminActions: [
+      'Configure content exclusions for files and paths that should not be available to Copilot.',
+      'Review exclusion changes centrally and include sensitive generated files, private configuration, and restricted source paths.',
+      'Treat issue text, pull request comments, MCP responses, and fetched web content as untrusted input rather than policy.',
+    ],
+    developerActions: [
+      'Do not paste excluded content into prompts or expose it through an approved tool.',
+      'Verify externally supplied instructions against the original task, repository policy, and requested scope before acting.',
+      'Stop and request review when external content asks for credentials, broader access, disabled checks, or unrelated changes.',
+    ],
+    validation: [
+      'Confirm excluded files do not inform Copilot app or Copilot CLI responses.',
+      'Confirm affected files are excluded from Copilot code review where supported.',
+      'Test IDE agent workflows separately because exclusions do not currently apply in Edit and Agent modes.',
+    ],
+    limitations: [
+      'Content exclusion is not supported in Edit and Agent modes of Copilot Chat in VS Code and other editors.',
+      'IDEs can still provide indirect semantic information such as type data, hover definitions, and build configuration.',
+      'Exclusions do not apply to symbolic links or repositories on remote filesystems.',
+      'Content exclusion reduces context exposure. It does not neutralize prompt injection or replace scoped tools and credentials.',
+    ],
+    sourceIds: ['content-exclusion', 'cloud-risks'],
+  },
+  {
+    id: 'identity',
+    step: 3,
     title: 'Use a dedicated identity',
     summary: 'Make the credential match the exact repositories and operations the agent needs.',
     risk:
@@ -518,7 +581,7 @@ export const modules: Module[] = [
   },
   {
     id: 'permissions',
-    step: 3,
+    step: 4,
     title: 'Set enterprise permissions',
     summary: 'Use centrally managed deny, ask, and allow rules on supported clients.',
     risk:
@@ -556,7 +619,7 @@ export const modules: Module[] = [
   },
   {
     id: 'sandbox',
-    step: 4,
+    step: 5,
     title: 'Sandbox execution',
     summary: 'Reduce what generated commands can read, change, and reach.',
     risk:
@@ -586,7 +649,7 @@ export const modules: Module[] = [
   },
   {
     id: 'tools',
-    step: 5,
+    step: 6,
     title: 'Govern MCP, plugins, and hooks',
     summary: 'Review every extension point that can add tools, data, or executable code.',
     risk:
@@ -632,7 +695,7 @@ export const modules: Module[] = [
   },
   {
     id: 'cloud-agent',
-    step: 6,
+    step: 7,
     title: 'Secure Copilot cloud agent',
     summary: 'Use the controls native to the ephemeral GitHub Actions execution path.',
     risk:
@@ -642,23 +705,28 @@ export const modules: Module[] = [
     adminActions: [
       'Keep the cloud-agent firewall enabled and manage its allowlist at organization level.',
       'Keep workflow execution blocked until someone with write access approves the agent-authored branch.',
+      'Preserve the independent review protections that prevent Copilot and the requesting user from approving the resulting pull request.',
       'Use Agents secrets only for values the agent must access and keep ordinary Actions secrets separate.',
       'Choose GitHub-hosted runners or enforce ephemeral self-hosted runner lifecycle and network controls.',
     ],
     developerActions: [
       'Keep copilot-setup-steps.yml deterministic, least-privilege, and locked to reviewed dependencies.',
+      'Treat issue text, pull request comments, MCP results, and fetched pages as untrusted input that can contain prompt injection.',
       'Review changes to workflows, hooks, MCP configuration, instructions, and agent definitions before running privileged checks.',
     ],
     validation: [
+      'Confirm a user without write access cannot trigger the agent and their comments are not presented to it.',
       'Confirm a non-allowlisted Bash destination is blocked.',
       'Confirm MCP and setup-step traffic are tested separately because the firewall does not cover them.',
       'Confirm agent-authored workflows wait for human approval.',
+      'Confirm Copilot cannot mark its pull request ready, approve it, or merge it, and the requesting user cannot approve it.',
     ],
     limitations: [
       'The cloud-agent firewall does not apply to MCP servers or environment setup steps.',
       'The setup workflow GITHUB_TOKEN policy is separate from the token used by the agent session.',
+      'Prompt injection cannot be eliminated through instructions or content exclusions alone. Limit tools, credentials, destinations, and merge authority.',
     ],
-    sourceIds: ['cloud-guardrails', 'cloud-resources', 'cloud-firewall'],
+    sourceIds: ['cloud-guardrails', 'cloud-risks', 'cloud-resources', 'cloud-firewall'],
     examples: [
       {
         title: 'Least-privilege setup workflow skeleton',
@@ -671,7 +739,7 @@ export const modules: Module[] = [
   },
   {
     id: 'merge-path',
-    step: 7,
+    step: 8,
     title: 'Protect the merge path',
     summary: 'Apply the same review and security gates to agent-authored code.',
     risk:
@@ -698,7 +766,7 @@ export const modules: Module[] = [
   },
   {
     id: 'monitor',
-    step: 8,
+    step: 9,
     title: 'Monitor and improve',
     summary: 'Use audit evidence to tune controls and detect unexpected agent behavior.',
     risk:
@@ -730,6 +798,10 @@ export const maturityChecks = [
   {
     id: 'scope',
     label: 'Agent access is limited to approved users and repositories.',
+  },
+  {
+    id: 'context',
+    label: 'Sensitive content is excluded, and untrusted external context is treated as data rather than policy.',
   },
   {
     id: 'identity',

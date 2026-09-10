@@ -1,4 +1,5 @@
 import {
+  BookLockedIcon,
   EyeIcon,
   KeyIcon,
   LockIcon,
@@ -22,6 +23,7 @@ interface AgentAccessPathProps {
 
 const icons = {
   scope: ShieldLockIcon,
+  context: BookLockedIcon,
   identity: KeyIcon,
   permission: LockIcon,
   isolation: StackCheckIcon,
@@ -42,11 +44,11 @@ export function AgentAccessPath({
 
   const getStatus = (layerId: LayerId) => {
     const layer = securityLayers.find((item) => item.id === layerId)
-    if (!layer?.surfaces.includes(selectedSurface)) {
-      return 'not-applicable'
-    }
     if (scenario.gaps[selectedSurface]?.includes(layerId)) {
       return 'gap'
+    }
+    if (!layer?.surfaces.includes(selectedSurface)) {
+      return 'not-applicable'
     }
     if (scenario.primary.includes(layerId)) {
       return 'primary'

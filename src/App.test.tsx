@@ -35,6 +35,20 @@ describe('App', () => {
     expect(
       screen.queryByRole('heading', { name: 'Set enterprise permissions' }),
     ).not.toBeInTheDocument()
+
+    const permissionLayer = screen.getByText('Permission').closest('li')
+    expect(permissionLayer).toHaveTextContent('Coverage gap')
+  })
+
+  it('explains untrusted instructions as an agent-specific risk', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await user.click(screen.getByRole('button', { name: 'Untrusted instructions' }))
+
+    expect(
+      screen.getByText(/contains instructions designed to redirect the agent/i),
+    ).toBeInTheDocument()
   })
 
   it('updates the maturity assessment locally', async () => {

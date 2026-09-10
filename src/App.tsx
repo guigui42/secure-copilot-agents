@@ -177,7 +177,7 @@ function App() {
               <li><KeyIcon /> Excessive or inherited credentials</li>
               <li><TerminalIcon /> Unsafe commands and tool payloads</li>
               <li><LinkExternalIcon /> Unapproved network destinations</li>
-              <li><BookIcon /> Tampered instructions or MCP configuration</li>
+              <li><BookIcon /> Prompt injection in issues, MCP, or web content</li>
               <li><MarkGithubIcon /> Unreviewed privileged workflows</li>
             </ul>
           </div>

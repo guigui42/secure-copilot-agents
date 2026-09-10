@@ -20,9 +20,9 @@ test('supports the guided surface workflow', async ({ page }) => {
     page.getByRole('heading', { name: 'Set enterprise permissions' }),
   ).toHaveCount(0)
 
-  await page.getByRole('button', { name: 'Untrusted MCP' }).click()
+  await page.getByRole('button', { name: 'Untrusted instructions' }).click()
   await expect(
-    page.getByText(/introduces an unreviewed MCP server/i),
+    page.getByText(/contains instructions designed to redirect the agent/i),
   ).toBeVisible()
 })
 
