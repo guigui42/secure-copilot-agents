@@ -55,6 +55,18 @@ describe('App', () => {
       mergeModule?.querySelector('.action-doc-link[href*="reviewing-proposed"]'),
     ).not.toBeNull()
 
+    const permissionsModule = document.querySelector('#permissions')
+    expect(
+      permissionsModule?.querySelector(
+        '.action-doc-link[href*="enterprise-managed-settings"]',
+      ),
+    ).toBeNull()
+    expect(
+      permissionsModule?.querySelector(
+        '.module__sources a[href*="enterprise-managed-settings"]',
+      ),
+    ).not.toBeNull()
+
     for (const link of document.querySelectorAll<HTMLAnchorElement>(
       'a[href^="http"]',
     )) {

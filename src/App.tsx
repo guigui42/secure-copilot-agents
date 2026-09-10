@@ -91,7 +91,7 @@ function getRepeatedActionSourceIds(actions: ActionItem[]) {
   }
 
   return [...counts.entries()]
-    .filter(([, count]) => count > actions.length / 2)
+    .filter(([, count]) => count > 1)
     .map(([sourceId]) => sourceId)
 }
 
@@ -306,10 +306,12 @@ function App() {
             </div>
 
             {visibleModules.map((module) => {
-              const repeatedActionSourceIds = new Set([
-                ...getRepeatedActionSourceIds(module.adminActions),
-                ...getRepeatedActionSourceIds(module.developerActions),
-              ])
+              const repeatedActionSourceIds = new Set(
+                getRepeatedActionSourceIds([
+                  ...module.adminActions,
+                  ...module.developerActions,
+                ]),
+              )
               const actionSourceIds = new Set(
                 [...module.adminActions, ...module.developerActions]
                   .map((action) => action.sourceId)

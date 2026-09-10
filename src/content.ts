@@ -545,8 +545,14 @@ export const modules: Module[] = [
     ],
     developerActions: [
       {
-        text: 'Run agents from the intended repository root and confirm the selected account and billing entity.',
+        text: 'Run agents from the intended repository root.',
+      },
+      {
+        text: 'Confirm the active GitHub CLI account before starting the agent.',
         sourceId: 'gh-auth-status',
+      },
+      {
+        text: 'Confirm the selected billing entity before starting the agent.',
       },
       {
         text: 'Use disposable repositories for new agents, MCP servers, hooks, and automation experiments.',
@@ -645,8 +651,11 @@ export const modules: Module[] = [
         sourceId: 'gh-env',
       },
       {
-        text: 'Verify the active token and repository owner before allowing write operations.',
+        text: 'Verify the active GitHub CLI account and token before allowing write operations.',
         sourceId: 'gh-auth-status',
+      },
+      {
+        text: 'Confirm the repository owner before allowing write operations.',
       },
     ],
     validation: [
