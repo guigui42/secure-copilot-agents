@@ -22,7 +22,9 @@ import {
   strengthLabels,
   surfaceLabels,
   verifiedDate,
+  type ActionItem,
   type Audience,
+  type Source,
   type Strength,
   type Surface,
 } from './content'
@@ -40,6 +42,58 @@ const surfaceIcons = {
   vscode: DeviceDesktopIcon,
   cloud: MarkGithubIcon,
 } satisfies Record<Surface, typeof ShieldCheckIcon>
+
+function ActionList({
+  actions,
+  sourceMap,
+  footerSourceIds,
+}: {
+  actions: ActionItem[]
+  sourceMap: Map<string, Source>
+  footerSourceIds: Set<string>
+}) {
+  return (
+    <ul>
+      {actions.map((action) => {
+        const source = action.sourceId && !footerSourceIds.has(action.sourceId)
+          ? sourceMap.get(action.sourceId)
+          : undefined
+
+        return (
+          <li key={action.text}>
+            {source ? (
+              <a
+                className="action-doc-link"
+                href={source.url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {action.text}
+                <LinkExternalIcon />
+              </a>
+            ) : (
+              action.text
+            )}
+          </li>
+        )
+      })}
+    </ul>
+  )
+}
+
+function getRepeatedActionSourceIds(actions: ActionItem[]) {
+  const counts = new Map<string, number>()
+
+  for (const action of actions) {
+    if (action.sourceId) {
+      counts.set(action.sourceId, (counts.get(action.sourceId) ?? 0) + 1)
+    }
+  }
+
+  return [...counts.entries()]
+    .filter(([, count]) => count > 1)
+    .map(([sourceId]) => sourceId)
+}
 
 function App() {
   const [audience, setAudience] = useState<Audience>('both')
@@ -164,6 +218,8 @@ function App() {
               <a
                 className="secondary-action"
                 href="https://github.com/guigui42/secure-copilot-agents"
+                target="_blank"
+                rel="noopener noreferrer"
               >
                 <MarkGithubIcon />
                 View source
@@ -249,8 +305,28 @@ function App() {
               </p>
             </div>
 
-            {visibleModules.map((module) => (
-              <article className="module" id={module.id} key={module.id}>
+            {visibleModules.map((module) => {
+              const repeatedActionSourceIds = new Set(
+                getRepeatedActionSourceIds([
+                  ...module.adminActions,
+                  ...module.developerActions,
+                ]),
+              )
+              const actionSourceIds = new Set(
+                [...module.adminActions, ...module.developerActions]
+                  .map((action) => action.sourceId)
+                  .filter(
+                    (sourceId): sourceId is string =>
+                      Boolean(sourceId) &&
+                      !repeatedActionSourceIds.has(sourceId as string),
+                  ),
+              )
+              const footerSourceIds = module.sourceIds.filter(
+                (sourceId) => !actionSourceIds.has(sourceId),
+              )
+
+              return (
+                <article className="module" id={module.id} key={module.id}>
                 <header className="module__header">
                   <span className="step-number">{module.step}</span>
                   <div>
@@ -301,21 +377,21 @@ function App() {
                   {(audience === 'both' || audience === 'admin') ? (
                     <section>
                       <h4>Administrator actions</h4>
-                      <ul>
-                        {module.adminActions.map((action) => (
-                          <li key={action}>{action}</li>
-                        ))}
-                      </ul>
+                      <ActionList
+                        actions={module.adminActions}
+                        sourceMap={sourceMap}
+                        footerSourceIds={repeatedActionSourceIds}
+                      />
                     </section>
                   ) : null}
                   {(audience === 'both' || audience === 'developer') ? (
                     <section>
                       <h4>Developer actions</h4>
-                      <ul>
-                        {module.developerActions.map((action) => (
-                          <li key={action}>{action}</li>
-                        ))}
-                      </ul>
+                      <ActionList
+                        actions={module.developerActions}
+                        sourceMap={sourceMap}
+                        footerSourceIds={repeatedActionSourceIds}
+                      />
                     </section>
                   ) : null}
                 </div>
@@ -339,20 +415,28 @@ function App() {
                   </section>
                 </div>
 
-                <footer className="module__sources">
-                  <span>Sources</span>
-                  {module.sourceIds.map((sourceId) => {
-                    const source = sourceMap.get(sourceId)
-                    return source ? (
-                      <a key={source.id} href={source.url}>
-                        {source.title}
-                        <LinkExternalIcon />
-                      </a>
-                    ) : null
-                  })}
-                </footer>
+                {footerSourceIds.length > 0 ? (
+                  <footer className="module__sources">
+                    <span>Sources</span>
+                    {footerSourceIds.map((sourceId) => {
+                      const source = sourceMap.get(sourceId)
+                      return source ? (
+                        <a
+                          key={source.id}
+                          href={source.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {source.title}
+                          <LinkExternalIcon />
+                        </a>
+                      ) : null
+                    })}
+                  </footer>
+                ) : null}
               </article>
-            ))}
+              )
+            })}
           </div>
         </div>
 
@@ -408,7 +492,12 @@ function App() {
           </div>
           <div className="source-table">
             {sources.map((source) => (
-              <a key={source.id} href={source.url}>
+              <a
+                key={source.id}
+                href={source.url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <span>{source.category}</span>
                 <strong>{source.title}</strong>
                 <LinkExternalIcon />
@@ -427,7 +516,11 @@ function App() {
           Public, source-backed guidance. No analytics, cookies, or assessment
           data collection.
         </p>
-        <a href="https://github.com/guigui42/secure-copilot-agents">
+        <a
+          href="https://github.com/guigui42/secure-copilot-agents"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           <MarkGithubIcon />
           Repository
         </a>

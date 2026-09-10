@@ -9,6 +9,14 @@ describe('security content', () => {
       for (const sourceId of module.sourceIds) {
         expect(sourceIds.has(sourceId)).toBe(true)
       }
+      for (const action of [
+        ...module.adminActions,
+        ...module.developerActions,
+      ]) {
+        if (action.sourceId) {
+          expect(sourceIds.has(action.sourceId)).toBe(true)
+        }
+      }
     }
   })
 

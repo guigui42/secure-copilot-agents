@@ -31,6 +31,11 @@ export interface CodeExample {
   note?: string
 }
 
+export interface ActionItem {
+  text: string
+  sourceId?: string
+}
+
 export interface Module {
   id: string
   step: number
@@ -39,8 +44,8 @@ export interface Module {
   risk: string
   surfaces: Exclude<Surface, 'all'>[]
   strengths: Strength[]
-  adminActions: string[]
-  developerActions: string[]
+  adminActions: ActionItem[]
+  developerActions: ActionItem[]
   validation: string[]
   limitations: string[]
   sourceIds: string[]
@@ -196,6 +201,42 @@ export const sources: Source[] = [
     title: 'GitHub CLI environment variables',
     url: 'https://cli.github.com/manual/gh_help_environment',
     category: 'CLI manual',
+  },
+  {
+    id: 'repo-custom-properties',
+    title: 'Managing custom properties for repositories',
+    url: 'https://docs.github.com/en/enterprise-cloud@latest/organizations/managing-organization-settings/managing-custom-properties-for-repositories-in-your-organization',
+    category: 'GitHub Docs',
+  },
+  {
+    id: 'gh-auth-status',
+    title: 'Checking GitHub CLI authentication status',
+    url: 'https://cli.github.com/manual/gh_auth_status',
+    category: 'CLI manual',
+  },
+  {
+    id: 'mcp-allowlist',
+    title: 'Configuring an enterprise MCP server allowlist',
+    url: 'https://docs.github.com/en/enterprise-cloud@latest/copilot/how-tos/administer-copilot/manage-mcp-usage/configure-enterprise-allowlist',
+    category: 'GitHub Docs',
+  },
+  {
+    id: 'mcp-cli',
+    title: 'Adding MCP servers for GitHub Copilot CLI',
+    url: 'https://docs.github.com/en/enterprise-cloud@latest/copilot/how-tos/copilot-cli/customize-copilot/add-mcp-servers',
+    category: 'GitHub Docs',
+  },
+  {
+    id: 'code-owners',
+    title: 'About code owners',
+    url: 'https://docs.github.com/en/enterprise-cloud@latest/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners',
+    category: 'GitHub Docs',
+  },
+  {
+    id: 'review-pr-changes',
+    title: 'Reviewing proposed changes in a pull request',
+    url: 'https://docs.github.com/en/enterprise-cloud@latest/pull-requests/how-tos/review-pull-requests/reviewing-proposed-changes-in-a-pull-request',
+    category: 'GitHub Docs',
   },
 ]
 
@@ -490,13 +531,32 @@ export const modules: Module[] = [
     surfaces: ['cli', 'app', 'vscode', 'cloud'],
     strengths: ['hard-boundary', 'guidance'],
     adminActions: [
-      'Enable agentic features only for approved organizations, repositories, and pilot groups.',
-      'Classify repositories by sensitivity and use custom properties to target policies and rulesets.',
-      'Keep personal repositories and ungoverned organizations outside the enterprise agent scope.',
+      {
+        text: 'Enable agentic features only for approved organizations, repositories, and pilot groups.',
+        sourceId: 'governing-agents',
+      },
+      {
+        text: 'Classify repositories by sensitivity and use custom properties to target policies and rulesets.',
+        sourceId: 'repo-custom-properties',
+      },
+      {
+        text: 'Keep personal repositories and ungoverned organizations outside the enterprise agent scope.',
+      },
     ],
     developerActions: [
-      'Run agents from the intended repository root and confirm the selected account and billing entity.',
-      'Use disposable repositories for new agents, MCP servers, hooks, and automation experiments.',
+      {
+        text: 'Run agents from the intended repository root.',
+      },
+      {
+        text: 'Confirm the active GitHub CLI account before starting the agent.',
+        sourceId: 'gh-auth-status',
+      },
+      {
+        text: 'Confirm the selected billing entity before starting the agent.',
+      },
+      {
+        text: 'Use disposable repositories for new agents, MCP servers, hooks, and automation experiments.',
+      },
     ],
     validation: [
       'Confirm an unapproved repository cannot start the cloud agent.',
@@ -505,7 +565,12 @@ export const modules: Module[] = [
     limitations: [
       'Scope policy does not reduce the permissions of credentials already exposed to a local process.',
     ],
-    sourceIds: ['cloud-guardrails', 'governing-agents'],
+    sourceIds: [
+      'cloud-guardrails',
+      'governing-agents',
+      'repo-custom-properties',
+      'gh-auth-status',
+    ],
   },
   {
     id: 'context',
@@ -517,14 +582,32 @@ export const modules: Module[] = [
     surfaces: ['cli', 'app', 'vscode'],
     strengths: ['conditional', 'guidance'],
     adminActions: [
-      'Configure content exclusions for files and paths that should not be available to Copilot.',
-      'Review exclusion changes centrally and include sensitive generated files, private configuration, and restricted source paths.',
-      'Treat issue text, pull request comments, MCP responses, and fetched web content as untrusted input rather than policy.',
+      {
+        text: 'Configure content exclusions for files and paths that should not be available to Copilot.',
+        sourceId: 'content-exclusion',
+      },
+      {
+        text: 'Review exclusion changes centrally and include sensitive generated files, private configuration, and restricted source paths.',
+        sourceId: 'content-exclusion',
+      },
+      {
+        text: 'Treat issue text, pull request comments, MCP responses, and fetched web content as untrusted input rather than policy.',
+        sourceId: 'cloud-risks',
+      },
     ],
     developerActions: [
-      'Do not paste excluded content into prompts or expose it through an approved tool.',
-      'Verify externally supplied instructions against the original task, repository policy, and requested scope before acting.',
-      'Stop and request review when external content asks for credentials, broader access, disabled checks, or unrelated changes.',
+      {
+        text: 'Do not paste excluded content into prompts or expose it through an approved tool.',
+        sourceId: 'content-exclusion',
+      },
+      {
+        text: 'Verify externally supplied instructions against the original task, repository policy, and requested scope before acting.',
+        sourceId: 'cloud-risks',
+      },
+      {
+        text: 'Stop and request review when external content asks for credentials, broader access, disabled checks, or unrelated changes.',
+        sourceId: 'cloud-risks',
+      },
     ],
     validation: [
       'Confirm excluded files do not inform Copilot app or Copilot CLI responses.',
@@ -549,13 +632,31 @@ export const modules: Module[] = [
     surfaces: ['cli', 'app', 'vscode', 'cloud'],
     strengths: ['hard-boundary'],
     adminActions: [
-      'Prefer GitHub App installation tokens for repeated access and install the App only on selected repositories.',
-      'If an App is impractical, require approval for fine-grained PATs and restrict classic PAT access.',
-      'Mint short-lived credentials through a controlled launcher or token broker. Never expose the App private key.',
+      {
+        text: 'Prefer GitHub App installation tokens for repeated access and install the App only on selected repositories.',
+        sourceId: 'app-auth',
+      },
+      {
+        text: 'If an App is impractical, require approval for fine-grained PATs and restrict classic PAT access.',
+        sourceId: 'pat-policy',
+      },
+      {
+        text: 'Mint short-lived credentials through a controlled launcher or token broker. Never expose the App private key.',
+        sourceId: 'app-auth',
+      },
     ],
     developerActions: [
-      'Use a separate GH_CONFIG_DIR and avoid the normal gh profile, SSH agent, keychain, and package credentials.',
-      'Verify the active token and repository owner before allowing write operations.',
+      {
+        text: 'Use a separate GH_CONFIG_DIR and avoid the normal gh profile, SSH agent, keychain, and package credentials.',
+        sourceId: 'gh-env',
+      },
+      {
+        text: 'Verify the active GitHub CLI account and token before allowing write operations.',
+        sourceId: 'gh-auth-status',
+      },
+      {
+        text: 'Confirm the repository owner before allowing write operations.',
+      },
     ],
     validation: [
       'Run gh auth status and confirm the dedicated GH_TOKEN is the active credential for the target host.',
@@ -568,7 +669,13 @@ export const modules: Module[] = [
       'GH_CONFIG_DIR isolates configuration files, not the operating-system keychain by itself.',
       'Fine-grained PATs remain tied to a person and have feature limitations compared with GitHub Apps.',
     ],
-    sourceIds: ['programmatic-access', 'app-auth', 'pat-policy', 'gh-env'],
+    sourceIds: [
+      'programmatic-access',
+      'app-auth',
+      'pat-policy',
+      'gh-env',
+      'gh-auth-status',
+    ],
     examples: [
       {
         title: 'Launch Copilot CLI with isolated GitHub state',
@@ -589,13 +696,27 @@ export const modules: Module[] = [
     surfaces: ['cli', 'app', 'vscode'],
     strengths: ['hard-boundary', 'approval-gate'],
     adminActions: [
-      'Use deny for operations that must never run, ask for high-risk writes, and allow only repeatable low-risk work.',
-      'Set disableBypassPermissionsMode to disable so users cannot enable allow-all or YOLO modes.',
-      'Use server-managed settings for review history and broad client coverage. Add device policy for controls that must survive account switching or a server outage.',
+      {
+        text: 'Use deny for operations that must never run, ask for high-risk writes, and allow only repeatable low-risk work.',
+        sourceId: 'configure-managed',
+      },
+      {
+        text: 'Set disableBypassPermissionsMode to disable so users cannot enable allow-all or YOLO modes.',
+        sourceId: 'managed-settings',
+      },
+      {
+        text: 'Use server-managed settings for review history and broad client coverage. Add device policy for controls that must survive account switching or a server outage.',
+        sourceId: 'configure-managed',
+      },
     ],
     developerActions: [
-      'Treat each managed ask prompt as a new decision. Check the full command, path, and destination.',
-      'Report blocked legitimate workflows instead of weakening local settings.',
+      {
+        text: 'Treat each managed ask prompt as a new decision. Check the full command, path, and destination.',
+        sourceId: 'managed-settings',
+      },
+      {
+        text: 'Report blocked legitimate workflows instead of weakening local settings.',
+      },
     ],
     validation: [
       'Confirm a deny rule blocks the operation even when another source allows it.',
@@ -627,13 +748,28 @@ export const modules: Module[] = [
     surfaces: ['cli', 'app', 'cloud'],
     strengths: ['hard-boundary', 'conditional'],
     adminActions: [
-      'For Copilot CLI, require sandboxing, fail if it is unavailable, disable bypass, and sandbox local MCP and LSP servers.',
-      'Disable inherited Git and gh authentication unless the controlled workflow explicitly needs it.',
-      'For cloud agent, use GitHub-hosted runners or ephemeral self-hosted runners with external log retention.',
+      {
+        text: 'For Copilot CLI, require sandboxing, fail if it is unavailable, disable bypass, and sandbox local MCP and LSP servers.',
+        sourceId: 'sandbox-config',
+      },
+      {
+        text: 'Disable inherited Git and gh authentication unless the controlled workflow explicitly needs it.',
+        sourceId: 'sandbox-config',
+      },
+      {
+        text: 'For cloud agent, use GitHub-hosted runners or ephemeral self-hosted runners with external log retention.',
+        sourceId: 'cloud-risks',
+      },
     ],
     developerActions: [
-      'Grant only the workspace paths and domains needed for the task.',
-      'Keep keychain, SSH, cloud CLI, registry, and shared dev-tool access disabled by default.',
+      {
+        text: 'Grant only the workspace paths and domains needed for the task.',
+        sourceId: 'sandbox-config',
+      },
+      {
+        text: 'Keep keychain, SSH, cloud CLI, registry, and shared dev-tool access disabled by default.',
+        sourceId: 'sandbox-config',
+      },
     ],
     validation: [
       'Attempt to read a denied path and connect to a denied domain.',
@@ -657,13 +793,27 @@ export const modules: Module[] = [
     surfaces: ['cli', 'app', 'vscode', 'cloud'],
     strengths: ['hard-boundary', 'conditional', 'guidance'],
     adminActions: [
-      'Allowlist remote MCP URLs or exact local server commands and block known-unapproved servers.',
-      'Restrict plugin marketplaces and protect enterprise custom agents and plugin sources.',
-      'Install machine-wide policy hooks for Copilot CLI when tool payload checks add value.',
+      {
+        text: 'Allowlist remote MCP URLs or exact local server commands and block known-unapproved servers.',
+        sourceId: 'mcp-allowlist',
+      },
+      {
+        text: 'Restrict plugin marketplaces and protect enterprise custom agents and plugin sources.',
+        sourceId: 'governing-agents',
+      },
+      {
+        text: 'Install machine-wide policy hooks for Copilot CLI when tool payload checks add value.',
+        sourceId: 'hooks',
+      },
     ],
     developerActions: [
-      'Request the smallest MCP tool set and keep write tools out until the read-only workflow is proven.',
-      'Pin package versions for local MCP servers and review their source, network behavior, and authentication.',
+      {
+        text: 'Request the smallest MCP tool set and keep write tools out until the read-only workflow is proven.',
+        sourceId: 'mcp-cli',
+      },
+      {
+        text: 'Pin package versions for local MCP servers and review their source, network behavior, and authentication.',
+      },
     ],
     validation: [
       'Confirm an unlisted MCP server cannot start on each supported local client.',
@@ -675,7 +825,14 @@ export const modules: Module[] = [
       'Policy hooks are Copilot CLI only. Cloud agent uses repository hooks.',
       'Hook timeouts fail open, and hooks cannot inspect opaque network traffic inside arbitrary code.',
     ],
-    sourceIds: ['managed-settings', 'hooks', 'cloud-resources', 'governing-agents'],
+    sourceIds: [
+      'managed-settings',
+      'hooks',
+      'cloud-resources',
+      'governing-agents',
+      'mcp-allowlist',
+      'mcp-cli',
+    ],
     examples: [
       {
         title: 'Machine-wide preToolUse hook configuration',
@@ -703,16 +860,40 @@ export const modules: Module[] = [
     surfaces: ['cloud'],
     strengths: ['hard-boundary', 'approval-gate', 'conditional'],
     adminActions: [
-      'Keep the cloud-agent firewall enabled and manage its allowlist at organization level.',
-      'Keep workflow execution blocked until someone with write access approves the agent-authored branch.',
-      'Preserve the independent review protections that prevent Copilot and the requesting user from approving the resulting pull request.',
-      'Use Agents secrets only for values the agent must access and keep ordinary Actions secrets separate.',
-      'Choose GitHub-hosted runners or enforce ephemeral self-hosted runner lifecycle and network controls.',
+      {
+        text: 'Keep the cloud-agent firewall enabled and manage its allowlist at organization level.',
+        sourceId: 'cloud-firewall',
+      },
+      {
+        text: 'Keep workflow execution blocked until someone with write access approves the agent-authored branch.',
+        sourceId: 'cloud-guardrails',
+      },
+      {
+        text: 'Preserve the independent review protections that prevent Copilot and the requesting user from approving the resulting pull request.',
+        sourceId: 'cloud-guardrails',
+      },
+      {
+        text: 'Use Agents secrets only for values the agent must access and keep ordinary Actions secrets separate.',
+        sourceId: 'cloud-resources',
+      },
+      {
+        text: 'Choose GitHub-hosted runners or enforce ephemeral self-hosted runner lifecycle and network controls.',
+        sourceId: 'cloud-risks',
+      },
     ],
     developerActions: [
-      'Keep copilot-setup-steps.yml deterministic, least-privilege, and locked to reviewed dependencies.',
-      'Treat issue text, pull request comments, MCP results, and fetched pages as untrusted input that can contain prompt injection.',
-      'Review changes to workflows, hooks, MCP configuration, instructions, and agent definitions before running privileged checks.',
+      {
+        text: 'Keep copilot-setup-steps.yml deterministic, least-privilege, and locked to reviewed dependencies.',
+        sourceId: 'cloud-guardrails',
+      },
+      {
+        text: 'Treat issue text, pull request comments, MCP results, and fetched pages as untrusted input that can contain prompt injection.',
+        sourceId: 'cloud-risks',
+      },
+      {
+        text: 'Review changes to workflows, hooks, MCP configuration, instructions, and agent definitions before running privileged checks.',
+        sourceId: 'cloud-guardrails',
+      },
     ],
     validation: [
       'Confirm a user without write access cannot trigger the agent and their comments are not presented to it.',
@@ -747,13 +928,26 @@ export const modules: Module[] = [
     surfaces: ['cli', 'app', 'vscode', 'cloud'],
     strengths: ['hard-boundary', 'approval-gate', 'detective'],
     adminActions: [
-      'Require independent pull request review, status checks, and code-owner approval for high-risk paths.',
-      'Protect instructions, agents, skills, MCP files, hooks, and setup workflows from unreviewed changes.',
-      'Require dependency review, code scanning, secret scanning, and applicable test workflows.',
+      {
+        text: 'Require independent pull request review, status checks, and code-owner approval for high-risk paths.',
+        sourceId: 'code-owners',
+      },
+      {
+        text: 'Protect instructions, agents, skills, MCP files, hooks, and setup workflows from unreviewed changes.',
+        sourceId: 'code-owners',
+      },
+      {
+        text: 'Require dependency review, code scanning, secret scanning, and applicable test workflows.',
+      },
     ],
     developerActions: [
-      'Review the diff, generated dependencies, commands run, and declared validation before approving.',
-      'Do not treat Copilot code review as a replacement for an accountable human approver.',
+      {
+        text: 'Review the diff, generated dependencies, commands run, and declared validation before approving.',
+        sourceId: 'review-pr-changes',
+      },
+      {
+        text: 'Do not treat Copilot code review as a replacement for an accountable human approver.',
+      },
     ],
     validation: [
       'Open a test pull request that changes a protected agent configuration file and confirm code-owner review is required.',
@@ -762,7 +956,12 @@ export const modules: Module[] = [
     limitations: [
       'Instructions improve behavior but can be ignored or misinterpreted. Repository enforcement decides what can merge.',
     ],
-    sourceIds: ['cloud-guardrails', 'governing-agents'],
+    sourceIds: [
+      'cloud-guardrails',
+      'governing-agents',
+      'code-owners',
+      'review-pr-changes',
+    ],
   },
   {
     id: 'monitor',
@@ -774,13 +973,27 @@ export const modules: Module[] = [
     surfaces: ['cli', 'app', 'vscode', 'cloud'],
     strengths: ['detective', 'guidance'],
     adminActions: [
-      'Monitor agent audit events and correlate repository activity with agent_session_id.',
-      'Use OpenTelemetry on supported clients with content capture disabled unless approved.',
-      'Alert on policy changes, MCP changes, high-risk file edits, unusual session volume, and ruleset bypass.',
+      {
+        text: 'Monitor agent audit events and correlate repository activity with agent_session_id.',
+        sourceId: 'monitoring',
+      },
+      {
+        text: 'Use OpenTelemetry on supported clients with content capture disabled unless approved.',
+        sourceId: 'otel',
+      },
+      {
+        text: 'Alert on policy changes, MCP changes, high-risk file edits, unusual session volume, and ruleset bypass.',
+        sourceId: 'agent-audit',
+      },
     ],
     developerActions: [
-      'Review session evidence after changing instructions, MCP servers, plugins, hooks, or setup steps.',
-      'Report repeated approval prompts and false denials so policies can be narrowed without bypassing them.',
+      {
+        text: 'Review session evidence after changing instructions, MCP servers, plugins, hooks, or setup steps.',
+        sourceId: 'monitoring',
+      },
+      {
+        text: 'Report repeated approval prompts and false denials so policies can be narrowed without bypassing them.',
+      },
     ],
     validation: [
       'Trigger a test session and trace its session, commit, and pull request events.',

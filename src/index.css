@@ -516,6 +516,23 @@ main,
   line-height: 1.45;
 }
 
+.pathway__item--baseline {
+  border-color: color-mix(in srgb, var(--border) 55%, var(--canvas));
+  background: color-mix(in srgb, var(--canvas-subtle) 35%, var(--canvas));
+}
+
+.pathway__item--baseline .pathway__icon {
+  border-color: color-mix(in srgb, var(--border) 55%, var(--canvas));
+  color: color-mix(in srgb, var(--fg-muted) 92%, var(--canvas));
+  background: var(--canvas);
+}
+
+.pathway__item--baseline span,
+.pathway__item--baseline strong,
+.pathway__item--baseline p {
+  color: color-mix(in srgb, var(--fg-muted) 92%, var(--canvas));
+}
+
 .pathway__item--primary {
   border-color: color-mix(in srgb, var(--success) 50%, var(--border));
   background: var(--success-muted);
@@ -805,6 +822,7 @@ main,
 .risk-callout {
   display: grid;
   grid-template-columns: 72px 1fr;
+  align-items: center;
   gap: 12px;
   margin: 24px 28px 0;
   border: 1px solid color-mix(in srgb, var(--danger) 35%, var(--border));
@@ -857,6 +875,25 @@ main,
   padding-left: 20px;
   color: var(--fg-muted);
   line-height: 1.55;
+}
+
+.action-doc-link {
+  color: var(--fg-muted);
+  text-decoration-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  text-underline-offset: 3px;
+}
+
+.action-doc-link:hover {
+  color: var(--accent);
+  text-decoration-color: currentColor;
+}
+
+.action-doc-link svg:last-child {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-left: 5px;
+  vertical-align: -1px;
 }
 
 .code-example {
@@ -1157,6 +1194,10 @@ main,
   .pathway__item:last-child {
     border: 1px solid var(--border);
     border-radius: 9px;
+  }
+
+  .pathway__item--baseline {
+    border-color: color-mix(in srgb, var(--border) 55%, var(--canvas));
   }
 
   .pathway__item::after {
