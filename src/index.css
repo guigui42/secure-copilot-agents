@@ -523,14 +523,14 @@ main,
 
 .pathway__item--baseline .pathway__icon {
   border-color: color-mix(in srgb, var(--border) 55%, var(--canvas));
-  color: color-mix(in srgb, var(--fg-muted) 84%, var(--canvas));
+  color: color-mix(in srgb, var(--fg-muted) 92%, var(--canvas));
   background: var(--canvas);
 }
 
 .pathway__item--baseline span,
 .pathway__item--baseline strong,
 .pathway__item--baseline p {
-  color: color-mix(in srgb, var(--fg-muted) 84%, var(--canvas));
+  color: color-mix(in srgb, var(--fg-muted) 92%, var(--canvas));
 }
 
 .pathway__item--primary {
