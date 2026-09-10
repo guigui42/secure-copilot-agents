@@ -15,6 +15,7 @@
     "check": "bun run lint && bun run test && bun run build && bun run test:e2e"
   },
   "dependencies": {
+    "@github/hydro-analytics-client": "^2.4.1",
     "@primer/octicons-react": "^19.35.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"

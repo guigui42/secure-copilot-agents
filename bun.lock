@@ -5,6 +5,7 @@
     "": {
       "name": "secure-copilot-agents-scaffold",
       "dependencies": {
+        "@github/hydro-analytics-client": "^2.4.1",
         "@primer/octicons-react": "^19.35.0",
         "react": "^19.3.0",
         "react-dom": "^19.3.0",
@@ -58,6 +59,8 @@
     "@csstools/css-tokenizer": ["@csstools/css-tokenizer@4.0.0", "", {}, "sha512-QxULHAm7cNu72w97JUNCBFODFaXpbDg+dP8b/oWFAZ2MTRppA3U00Y2L1HqaS4J6yBqxwa/Y3nMBaxVKbB/NsA=="],
 
     "@exodus/bytes": ["@exodus/bytes@1.15.1", "", { "peerDependencies": { "@noble/hashes": "^1.8.0 || ^2.0.0" }, "optionalPeers": ["@noble/hashes"] }, "sha512-S6mL0yNB/Abt9Ei4tq8gDhcczc4S3+vQ4ra7vxnAf+YHC02srtqxKKZghx2Dq6p0e66THKwR6r8N6P95wEty7Q=="],
+
+    "@github/hydro-analytics-client": ["@github/hydro-analytics-client@2.4.1", "", {}, "sha512-hNxnAlNXSDG5tyGeLpZVGzCoR0OTrqcLNZeiAa1qp5YkvVR9c2Eo7dV+wpiDYX8XgLma2nXlzo+P0i7veOl3Sg=="],
 
     "@jridgewell/resolve-uri": ["@jridgewell/resolve-uri@3.1.2", "", {}, "sha512-bRISgCIjP20/tbWSPWMEi54QVPRZExkuD9lJL+UIxUKtwVJA8wW1Trb1jMs1RFXo1CBTNZ/5hpC9QvmKWdopKw=="],
 

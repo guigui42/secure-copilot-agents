@@ -1,7 +1,15 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App'
+
+const { trackInteraction } = vi.hoisted(() => ({
+  trackInteraction: vi.fn(),
+}))
+
+vi.mock('./analytics', () => ({
+  trackInteraction,
+}))
 
 Object.assign(navigator, {
   clipboard: {
@@ -10,6 +18,10 @@ Object.assign(navigator, {
 })
 
 describe('App', () => {
+  beforeEach(() => {
+    trackInteraction.mockClear()
+  })
+
   it('presents the learning path and public sources', () => {
     render(<App />)
 
@@ -93,6 +105,11 @@ describe('App', () => {
     expect(permissionLayer).toHaveTextContent('Coverage gap')
     expect(screen.getByText('Coverage gap', { selector: '.path-legend span' }))
       .toBeInTheDocument()
+    expect(trackInteraction).toHaveBeenCalledWith({
+      category: 'filter',
+      action: 'change',
+      label: 'surface:cloud',
+    })
   })
 
   it('explains untrusted instructions as an agent-specific risk', async () => {
@@ -104,6 +121,11 @@ describe('App', () => {
     expect(
       screen.getByText(/contains instructions designed to redirect the agent/i),
     ).toBeInTheDocument()
+    expect(trackInteraction).toHaveBeenCalledWith({
+      category: 'scenario',
+      action: 'change',
+      label: 'prompt-injection',
+    })
   })
 
   it('only shows path statuses that are present in the selected scenario', async () => {
@@ -117,15 +139,66 @@ describe('App', () => {
     ).not.toBeInTheDocument()
   })
 
+  it('tracks learning progress, code copies, and source visits', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await user.click(screen.getAllByRole('button', { name: 'Mark complete' })[0])
+    await user.click(screen.getAllByRole('button', { name: 'Copy' })[0])
+
+    const sourceLink = document.querySelector<HTMLAnchorElement>('.source-table a')
+    expect(sourceLink).not.toBeNull()
+    await user.click(sourceLink!)
+
+    expect(trackInteraction).toHaveBeenCalledWith({
+      category: 'progress',
+      action: 'complete',
+      label: 'scope',
+    })
+    expect(trackInteraction).toHaveBeenCalledWith({
+      category: 'code',
+      action: 'copy',
+      label: 'identity:isolated-cli-state',
+    })
+    expect(trackInteraction).toHaveBeenCalledWith({
+      category: 'source',
+      action: 'open',
+      label: 'index:managed-settings',
+    })
+  })
+
+  it('tracks each module completion transition without stale state', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    const button = screen.getAllByRole('button', { name: 'Mark complete' })[0]
+    await user.click(button)
+    await user.click(screen.getAllByRole('button', { name: 'Completed' })[0])
+
+    expect(button).toHaveTextContent('Mark complete')
+    expect(trackInteraction).toHaveBeenNthCalledWith(1, {
+      category: 'progress',
+      action: 'complete',
+      label: 'scope',
+    })
+    expect(trackInteraction).toHaveBeenNthCalledWith(2, {
+      category: 'progress',
+      action: 'uncomplete',
+      label: 'scope',
+    })
+  })
+
   it('updates the maturity assessment locally', async () => {
     const user = userEvent.setup()
     render(<App />)
 
+    trackInteraction.mockClear()
     const checks = screen.getAllByRole('checkbox')
     await user.click(checks[0])
     await user.click(checks[1])
     await user.click(checks[2])
 
     expect(screen.getByText('Controlled')).toBeInTheDocument()
+    expect(trackInteraction).not.toHaveBeenCalled()
   })
 })

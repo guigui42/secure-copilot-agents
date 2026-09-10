@@ -1,7 +1,34 @@
 import AxeBuilder from '@axe-core/playwright'
-import { expect, test } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
+
+interface HydroPayload {
+  page_views?: Array<{
+    context?: Record<string, string>
+    page: string
+    title: string
+  }>
+  events?: Array<{
+    context?: Record<string, string>
+    page: string
+    title: string
+    type: string
+  }>
+}
+
+async function interceptAnalytics(
+  page: Page,
+  payloads: HydroPayload[] = [],
+) {
+  await page.route('https://collector.githubapp.com/**', async (route) => {
+    payloads.push(route.request().postDataJSON() as HydroPayload)
+    await route.fulfill({ status: 204 })
+  })
+
+  return payloads
+}
 
 test('supports the guided surface workflow', async ({ page }) => {
+  await interceptAnalytics(page)
   await page.goto('./')
 
   await expect(
@@ -27,6 +54,7 @@ test('supports the guided surface workflow', async ({ page }) => {
 })
 
 test('has no detectable WCAG A or AA violations', async ({ page }) => {
+  await interceptAnalytics(page)
   await page.goto('./')
 
   const results = await new AxeBuilder({ page })
@@ -40,6 +68,7 @@ test('has no detectable WCAG A or AA violations', async ({ page }) => {
 })
 
 test('fits the selected viewport without horizontal overflow', async ({ page }) => {
+  await interceptAnalytics(page)
   await page.goto('./')
 
   const hasOverflow = await page.evaluate(
@@ -47,4 +76,51 @@ test('fits the selected viewport without horizontal overflow', async ({ page }) 
   )
 
   expect(hasOverflow).toBe(false)
+})
+
+test('publishes one page view and batches controlled interactions', async ({
+  context,
+  page,
+}) => {
+  const payloads = await interceptAnalytics(page)
+
+  await page.goto('./')
+  await page.getByLabel('Copilot surface').selectOption('cloud')
+
+  await expect.poll(
+    () => payloads.flatMap((payload) => payload.events ?? []).length,
+  ).toBe(1)
+
+  const pageViews = payloads.flatMap((payload) => payload.page_views ?? [])
+  const events = payloads.flatMap((payload) => payload.events ?? [])
+
+  expect(pageViews).toHaveLength(1)
+  expect(pageViews[0]).toMatchObject({
+    context: {
+      site: 'secure-copilot-agents',
+    },
+    title: 'Secure GitHub Copilot agents',
+  })
+  expect(events).toEqual([
+    expect.objectContaining({
+      context: {
+        action: 'change',
+        category: 'filter',
+        label: 'surface:cloud',
+        site: 'secure-copilot-agents',
+      },
+      type: 'secure_copilot_agents.interaction',
+    }),
+  ])
+
+  const cookies = await context.cookies()
+  expect(cookies).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        name: '_octo',
+        sameSite: 'Lax',
+        secure: true,
+      }),
+    ]),
+  )
 })

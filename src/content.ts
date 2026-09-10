@@ -25,6 +25,7 @@ export interface Source {
 }
 
 export interface CodeExample {
+  id: string
   title: string
   language: 'json' | 'bash' | 'yaml'
   code: string
@@ -678,6 +679,7 @@ export const modules: Module[] = [
     ],
     examples: [
       {
+        id: 'isolated-cli-state',
         title: 'Launch Copilot CLI with isolated GitHub state',
         language: 'bash',
         code: isolatedCli,
@@ -730,6 +732,7 @@ export const modules: Module[] = [
     sourceIds: ['managed-settings', 'configure-managed', 'managed-permissions-ga'],
     examples: [
       {
+        id: 'managed-settings-baseline',
         title: 'High-assurance managed settings baseline',
         language: 'json',
         code: managedSettings,
@@ -835,6 +838,7 @@ export const modules: Module[] = [
     ],
     examples: [
       {
+        id: 'policy-hook-config',
         title: 'Machine-wide preToolUse hook configuration',
         language: 'json',
         code: policyHookConfig,
@@ -842,6 +846,7 @@ export const modules: Module[] = [
           'Place policy JSON under /etc/github-copilot/policy.d on macOS or Linux, or use the documented Windows policy locations.',
       },
       {
+        id: 'posix-policy-hook',
         title: 'Example POSIX policy hook',
         language: 'bash',
         code: policyHook,
@@ -910,6 +915,7 @@ export const modules: Module[] = [
     sourceIds: ['cloud-guardrails', 'cloud-risks', 'cloud-resources', 'cloud-firewall'],
     examples: [
       {
+        id: 'setup-workflow',
         title: 'Least-privilege setup workflow skeleton',
         language: 'yaml',
         code: cloudChecklist,

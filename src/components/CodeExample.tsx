@@ -1,16 +1,23 @@
 import { useState } from 'react'
 import { CheckIcon, CopyIcon } from '@primer/octicons-react'
+import { trackInteraction } from '../analytics'
 import type { CodeExample as CodeExampleData } from '../content'
 
 interface CodeExampleProps {
+  analyticsLabel: string
   example: CodeExampleData
 }
 
-export function CodeExample({ example }: CodeExampleProps) {
+export function CodeExample({ analyticsLabel, example }: CodeExampleProps) {
   const [copied, setCopied] = useState(false)
 
   const copy = async () => {
     await navigator.clipboard.writeText(example.code)
+    trackInteraction({
+      category: 'code',
+      action: 'copy',
+      label: analyticsLabel,
+    })
     setCopied(true)
     window.setTimeout(() => setCopied(false), 1800)
   }

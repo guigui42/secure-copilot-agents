@@ -16,6 +16,7 @@ import {
 import { AgentAccessPath } from './components/AgentAccessPath'
 import { CodeExample } from './components/CodeExample'
 import { MaturityAssessment } from './components/MaturityAssessment'
+import { trackInteraction } from './analytics'
 import {
   modules,
   sources,
@@ -45,10 +46,12 @@ const surfaceIcons = {
 
 function ActionList({
   actions,
+  moduleId,
   sourceMap,
   footerSourceIds,
 }: {
   actions: ActionItem[]
+  moduleId: string
   sourceMap: Map<string, Source>
   footerSourceIds: Set<string>
 }) {
@@ -67,6 +70,13 @@ function ActionList({
                 href={source.url}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() =>
+                  trackInteraction({
+                    category: 'source',
+                    action: 'open',
+                    label: `${moduleId}:inline:${source.id}`,
+                  })
+                }
               >
                 {action.text}
                 <LinkExternalIcon />
@@ -139,11 +149,17 @@ function App() {
   )
 
   const toggleComplete = (moduleId: string) => {
+    const isCompleted = completed.includes(moduleId)
     setCompleted((current) =>
       current.includes(moduleId)
         ? current.filter((item) => item !== moduleId)
         : [...current, moduleId],
     )
+    trackInteraction({
+      category: 'progress',
+      action: isCompleted ? 'uncomplete' : 'complete',
+      label: moduleId,
+    })
   }
 
   const progress = Math.round((completed.length / modules.length) * 100)
@@ -155,7 +171,18 @@ function App() {
       </a>
 
       <header className="site-header">
-        <a className="brand" href="#top" aria-label="Secure GitHub Copilot agents home">
+        <a
+          className="brand"
+          href="#top"
+          aria-label="Secure GitHub Copilot agents home"
+          onClick={() =>
+            trackInteraction({
+              category: 'navigation',
+              action: 'click',
+              label: 'brand-home',
+            })
+          }
+        >
           <span><ShieldCheckIcon /></span>
           <strong>Secure Copilot agents</strong>
         </a>
@@ -167,7 +194,14 @@ function App() {
                 key={item}
                 type="button"
                 aria-pressed={audience === item}
-                onClick={() => setAudience(item)}
+                onClick={() => {
+                  setAudience(item)
+                  trackInteraction({
+                    category: 'filter',
+                    action: 'change',
+                    label: `audience:${item}`,
+                  })
+                }}
               >
                 {audienceLabels[item]}
               </button>
@@ -178,7 +212,15 @@ function App() {
             <span className="sr-only">Copilot surface</span>
             <select
               value={surface}
-              onChange={(event) => setSurface(event.target.value as Surface)}
+              onChange={(event) => {
+                const nextSurface = event.target.value as Surface
+                setSurface(nextSurface)
+                trackInteraction({
+                  category: 'filter',
+                  action: 'change',
+                  label: `surface:${nextSurface}`,
+                })
+              }}
             >
               {Object.entries(surfaceLabels).map(([value, label]) => (
                 <option key={value} value={value}>{label}</option>
@@ -191,7 +233,15 @@ function App() {
             type="button"
             className="icon-button"
             aria-label={`Use ${theme === 'dark' ? 'light' : 'dark'} theme`}
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            onClick={() => {
+              const nextTheme = theme === 'dark' ? 'light' : 'dark'
+              setTheme(nextTheme)
+              trackInteraction({
+                category: 'appearance',
+                action: 'change',
+                label: `theme:${nextTheme}`,
+              })
+            }}
           >
             {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
           </button>
@@ -212,7 +262,17 @@ function App() {
               isolation, repository gates, and audit evidence.
             </p>
             <div className="hero__actions">
-              <a className="primary-action" href="#learning-path">
+              <a
+                className="primary-action"
+                href="#learning-path"
+                onClick={() =>
+                  trackInteraction({
+                    category: 'navigation',
+                    action: 'click',
+                    label: 'start-learning-path',
+                  })
+                }
+              >
                 Start the learning path
               </a>
               <a
@@ -220,6 +280,13 @@ function App() {
                 href="https://github.com/guigui42/secure-copilot-agents"
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() =>
+                  trackInteraction({
+                    category: 'navigation',
+                    action: 'click',
+                    label: 'view-source',
+                  })
+                }
               >
                 <MarkGithubIcon />
                 View source
@@ -261,7 +328,14 @@ function App() {
         <AgentAccessPath
           surface={surface}
           scenarioId={scenario}
-          onScenarioChange={setScenario}
+          onScenarioChange={(scenarioId) => {
+            setScenario(scenarioId)
+            trackInteraction({
+              category: 'scenario',
+              action: 'change',
+              label: scenarioId,
+            })
+          }}
         />
 
         <div className="learning-layout" id="learning-path">
@@ -285,7 +359,16 @@ function App() {
             <ol>
               {modules.map((module) => (
                 <li key={module.id}>
-                  <a href={`#${module.id}`}>
+                  <a
+                    href={`#${module.id}`}
+                    onClick={() =>
+                      trackInteraction({
+                        category: 'navigation',
+                        action: 'click',
+                        label: `module:${module.id}`,
+                      })
+                    }
+                  >
                     <span>{module.step}</span>
                     {module.title}
                     {completed.includes(module.id) ? <CheckIcon /> : null}
@@ -379,6 +462,7 @@ function App() {
                       <h4>Administrator actions</h4>
                       <ActionList
                         actions={module.adminActions}
+                        moduleId={module.id}
                         sourceMap={sourceMap}
                         footerSourceIds={repeatedActionSourceIds}
                       />
@@ -389,6 +473,7 @@ function App() {
                       <h4>Developer actions</h4>
                       <ActionList
                         actions={module.developerActions}
+                        moduleId={module.id}
                         sourceMap={sourceMap}
                         footerSourceIds={repeatedActionSourceIds}
                       />
@@ -397,7 +482,11 @@ function App() {
                 </div>
 
                 {module.examples?.map((example) => (
-                  <CodeExample key={example.title} example={example} />
+                  <CodeExample
+                    key={example.title}
+                    analyticsLabel={`${module.id}:${example.id}`}
+                    example={example}
+                  />
                 ))}
 
                 <div className="validation-grid">
@@ -426,6 +515,13 @@ function App() {
                           href={source.url}
                           target="_blank"
                           rel="noopener noreferrer"
+                          onClick={() =>
+                            trackInteraction({
+                              category: 'source',
+                              action: 'open',
+                              label: `${module.id}:footer:${source.id}`,
+                            })
+                          }
                         >
                           {source.title}
                           <LinkExternalIcon />
@@ -497,6 +593,13 @@ function App() {
                 href={source.url}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() =>
+                  trackInteraction({
+                    category: 'source',
+                    action: 'open',
+                    label: `index:${source.id}`,
+                  })
+                }
               >
                 <span>{source.category}</span>
                 <strong>{source.title}</strong>
@@ -513,13 +616,19 @@ function App() {
           <strong>Secure GitHub Copilot agents</strong>
         </div>
         <p>
-          Public, source-backed guidance. No analytics, cookies, or assessment
-          data collection.
+          Anonymous usage analytics. Maturity assessment answers remain local.
         </p>
         <a
           href="https://github.com/guigui42/secure-copilot-agents"
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() =>
+            trackInteraction({
+              category: 'navigation',
+              action: 'click',
+              label: 'footer-repository',
+            })
+          }
         >
           <MarkGithubIcon />
           Repository
