@@ -59,6 +59,10 @@ export function AgentAccessPath({
     return 'baseline'
   }
 
+  const visibleStatuses = new Set(
+    securityLayers.map((layer) => getStatus(layer.id)),
+  )
+
   return (
     <section className="access-path" aria-labelledby="access-path-title">
       <div className="section-heading">
@@ -117,9 +121,15 @@ export function AgentAccessPath({
       </ol>
 
       <div className="path-legend" aria-label="Path status legend">
-        <span><i className="legend-dot legend-dot--primary" />Primary control</span>
-        <span><i className="legend-dot legend-dot--supporting" />Supporting control</span>
-        <span><i className="legend-dot legend-dot--gap" />Coverage gap</span>
+        {visibleStatuses.has('primary') && (
+          <span><i className="legend-dot legend-dot--primary" />Primary control</span>
+        )}
+        {visibleStatuses.has('supporting') && (
+          <span><i className="legend-dot legend-dot--supporting" />Supporting control</span>
+        )}
+        {visibleStatuses.has('gap') && (
+          <span><i className="legend-dot legend-dot--gap" />Coverage gap</span>
+        )}
       </div>
     </section>
   )
