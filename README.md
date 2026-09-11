@@ -64,6 +64,7 @@ bun run test:e2e
 src/content.ts             Source-backed modules, examples, and control data
 src/components/            Interactive learning components
 src/App.tsx                Page composition and audience/surface filtering
+public/                    Crawl metadata, icons, and social sharing previews
 e2e/site.spec.ts           Responsive and accessibility browser checks
 .github/workflows/         CI and GitHub Pages deployment
 ```

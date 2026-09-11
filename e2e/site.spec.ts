@@ -33,7 +33,7 @@ test('supports the guided surface workflow', async ({ page }) => {
 
   await expect(
     page.getByRole('heading', {
-      name: /reduce agent blast radius/i,
+      name: /secure github copilot agents/i,
       level: 1,
     }),
   ).toBeVisible()
@@ -51,6 +51,50 @@ test('supports the guided surface workflow', async ({ page }) => {
   await expect(
     page.getByText(/contains instructions designed to redirect the agent/i),
   ).toBeVisible()
+})
+
+test('publishes complete search and sharing metadata', async ({ page, request }) => {
+  await interceptAnalytics(page)
+  await page.goto('./')
+
+  await expect(page).toHaveTitle(
+    'Secure GitHub Copilot Agents | Enterprise Security Guide',
+  )
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+    'href',
+    'https://guigui42.github.io/secure-copilot-agents/',
+  )
+  await expect(page.locator('meta[name="description"]')).toHaveAttribute(
+    'content',
+    /secure GitHub Copilot coding agents/i,
+  )
+  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
+    'content',
+    /social-card\.png$/,
+  )
+  await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute(
+    'content',
+    'summary_large_image',
+  )
+  const structuredData = await page
+    .locator('script[type="application/ld+json"]')
+    .textContent()
+  expect(JSON.parse(structuredData ?? '{}')).toMatchObject({
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+  })
+
+  const robots = await request.get('./robots.txt')
+  expect(robots.ok()).toBe(true)
+  expect(await robots.text()).toContain(
+    'Sitemap: https://guigui42.github.io/secure-copilot-agents/sitemap.xml',
+  )
+
+  const sitemap = await request.get('./sitemap.xml')
+  expect(sitemap.ok()).toBe(true)
+  expect(await sitemap.text()).toContain(
+    '<loc>https://guigui42.github.io/secure-copilot-agents/</loc>',
+  )
 })
 
 test('has no detectable WCAG A or AA violations', async ({ page }) => {
@@ -99,7 +143,7 @@ test('publishes one page view and batches controlled interactions', async ({
     context: {
       site: 'secure-copilot-agents',
     },
-    title: 'Secure GitHub Copilot agents',
+    title: 'Secure GitHub Copilot Agents | Enterprise Security Guide',
   })
   expect(events).toEqual([
     expect.objectContaining({
