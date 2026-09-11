@@ -30,6 +30,7 @@ tools:
   edit:
   bash:
     - "curl:*"
+    - "mkdir:*"
     - bun run lint
     - bun run test
     - bun run build
@@ -102,6 +103,9 @@ styling, tests, build configuration, or deployment configuration.
    the request fails, retry it once. If it still fails, call `noop` with the
    command and exact error. Do not describe the failure as a firewall or
    domain-allowlist block unless the error or firewall audit explicitly says so.
+   Run `curl` as a standalone shell command. `/tmp/gh-aw/agent/` already exists,
+   so do not combine the preflight request with `mkdir`, `echo`, or other
+   commands.
 2. Use `curl` only for read-only HTTPS `GET` or `HEAD` requests to domains in
    `network.allowed`. Never send request bodies, upload files, use custom HTTP
    methods, add authentication headers, or send cookies.
