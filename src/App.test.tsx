@@ -120,6 +120,24 @@ describe('App', () => {
     })
   })
 
+  it('copies the public page link from the header title', async () => {
+    const user = userEvent.setup()
+    const clipboardWriteText = vi.spyOn(navigator.clipboard, 'writeText')
+    render(<App />)
+
+    await user.click(screen.getByRole('button', { name: 'Copy page link' }))
+
+    expect(clipboardWriteText).toHaveBeenCalledWith('https://gh.io/secure-copilot')
+    expect(
+      screen.getByRole('button', { name: 'Page link copied' }),
+    ).toBeInTheDocument()
+    expect(trackInteraction).toHaveBeenCalledWith({
+      category: 'navigation',
+      action: 'copy',
+      label: 'brand-page-link',
+    })
+  })
+
   it('explains untrusted instructions as an agent-specific risk', async () => {
     const user = userEvent.setup()
     render(<App />)
