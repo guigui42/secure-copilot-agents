@@ -255,7 +255,7 @@ function App() {
               <ShieldCheckIcon />
               Verified against GitHub Docs on {verifiedDate}
             </div>
-            <h1>Reduce agent blast radius without blocking useful work.</h1>
+            <h1>Secure GitHub Copilot agents without blocking useful work.</h1>
             <p className="hero__lede">
               A practical enterprise learning path for securing GitHub Copilot
               coding agents with scoped identity, managed permissions,

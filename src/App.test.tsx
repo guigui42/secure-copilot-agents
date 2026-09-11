@@ -27,7 +27,7 @@ describe('App', () => {
 
     expect(
       screen.getByRole('heading', {
-        name: /reduce agent blast radius/i,
+        name: /secure github copilot agents/i,
         level: 1,
       }),
     ).toBeInTheDocument()

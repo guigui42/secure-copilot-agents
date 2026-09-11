@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://guigui42.github.io/secure-copilot-agents/sitemap.xml
