@@ -166,6 +166,26 @@ input:focus-visible {
   gap: 10px;
 }
 
+.header-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 0 12px;
+  color: var(--fg);
+  background: var(--canvas);
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.header-link:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 .compact-control {
   border: 1px solid var(--border);
   border-radius: 7px;
@@ -1165,7 +1185,8 @@ main,
 }
 
 .site-footer > div,
-.site-footer a {
+.site-footer a,
+.footer-links {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1181,6 +1202,10 @@ main,
 
 .site-footer a {
   text-decoration: none;
+}
+
+.footer-links {
+  gap: 18px;
 }
 
 @media (max-width: 1120px) {
@@ -1294,11 +1319,17 @@ main,
   }
 
   .surface-select select {
+    min-width: 0;
     width: 100%;
+  }
+
+  .header-link-prefix {
+    display: none;
   }
 
   .compact-control button,
   .scenario-tabs button,
+  .header-link,
   .icon-button,
   .complete-button {
     min-height: 44px;
