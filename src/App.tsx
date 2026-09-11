@@ -208,6 +208,25 @@ function App() {
             ))}
           </div>
 
+          <a
+            className="header-link"
+            href="https://gh.io/copilot-panorama"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Copilot Panorama"
+            onClick={() =>
+              trackInteraction({
+                category: 'navigation',
+                action: 'click',
+                label: 'header-copilot-panorama',
+              })
+            }
+          >
+            <span className="header-link-prefix">Copilot </span>
+            Panorama
+            <LinkExternalIcon />
+          </a>
+
           <label className="surface-select">
             <span className="sr-only">Copilot surface</span>
             <select
@@ -618,21 +637,37 @@ function App() {
         <p>
           Anonymous usage analytics. Maturity assessment answers remain local.
         </p>
-        <a
-          href="https://github.com/guigui42/secure-copilot-agents"
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={() =>
-            trackInteraction({
-              category: 'navigation',
-              action: 'click',
-              label: 'footer-repository',
-            })
-          }
-        >
-          <MarkGithubIcon />
-          Repository
-        </a>
+        <nav className="footer-links" aria-label="Footer links">
+          <a
+            href="https://github.com/guigui42/secure-copilot-agents"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() =>
+              trackInteraction({
+                category: 'navigation',
+                action: 'click',
+                label: 'footer-repository',
+              })
+            }
+          >
+            <MarkGithubIcon />
+            Repository
+          </a>
+          <a
+            href="https://github.com/guigui42"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() =>
+              trackInteraction({
+                category: 'navigation',
+                action: 'click',
+                label: 'footer-profile',
+              })
+            }
+          >
+            @guigui42
+          </a>
+        </nav>
       </footer>
     </>
   )

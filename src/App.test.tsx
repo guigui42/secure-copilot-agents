@@ -34,6 +34,14 @@ describe('App', () => {
     expect(screen.getByRole('heading', { name: 'Source index' })).toBeInTheDocument()
     expect(screen.getAllByRole('article').length).toBeGreaterThan(4)
 
+    expect(
+      screen.getByRole('link', { name: /copilot panorama/i }),
+    ).toHaveAttribute('href', 'https://gh.io/copilot-panorama')
+    expect(screen.getByRole('link', { name: '@guigui42' })).toHaveAttribute(
+      'href',
+      'https://github.com/guigui42',
+    )
+
     const scopeModule = document.querySelector('#scope')
     const scopeActionLink = scopeModule?.querySelector<HTMLAnchorElement>(
       '.action-doc-link[href*="custom-properties"]',
@@ -149,6 +157,8 @@ describe('App', () => {
     const sourceLink = document.querySelector<HTMLAnchorElement>('.source-table a')
     expect(sourceLink).not.toBeNull()
     await user.click(sourceLink!)
+    await user.click(screen.getByRole('link', { name: /copilot panorama/i }))
+    await user.click(screen.getByRole('link', { name: '@guigui42' }))
 
     expect(trackInteraction).toHaveBeenCalledWith({
       category: 'progress',
@@ -164,6 +174,16 @@ describe('App', () => {
       category: 'source',
       action: 'open',
       label: 'index:managed-settings',
+    })
+    expect(trackInteraction).toHaveBeenCalledWith({
+      category: 'navigation',
+      action: 'click',
+      label: 'header-copilot-panorama',
+    })
+    expect(trackInteraction).toHaveBeenCalledWith({
+      category: 'navigation',
+      action: 'click',
+      label: 'footer-profile',
     })
   })
 
