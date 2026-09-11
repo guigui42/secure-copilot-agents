@@ -29,8 +29,8 @@ network:
 tools:
   edit:
   bash:
-    - "curl:*"
-    - "mkdir:*"
+    - "curl*"
+    - "mkdir*"
     - bun run lint
     - bun run test
     - bun run build
