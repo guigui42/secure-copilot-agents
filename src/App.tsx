@@ -4,6 +4,7 @@ import {
   CheckIcon,
   ChevronDownIcon,
   CopilotIcon,
+  CopyIcon,
   DeviceDesktopIcon,
   KeyIcon,
   LinkExternalIcon,
@@ -29,6 +30,8 @@ import {
   type Strength,
   type Surface,
 } from './content'
+
+const PAGE_LINK = 'https://gh.io/secure-copilot'
 
 const audienceLabels: Record<Audience, string> = {
   both: 'Both',
@@ -109,6 +112,7 @@ function App() {
   const [audience, setAudience] = useState<Audience>('both')
   const [surface, setSurface] = useState<Surface>('all')
   const [scenario, setScenario] = useState('personal-repository')
+  const [copiedPageLink, setCopiedPageLink] = useState(false)
   const [completed, setCompleted] = useState<string[]>(() => {
     try {
       return JSON.parse(localStorage.getItem('secure-agent-progress') ?? '[]')
@@ -164,6 +168,17 @@ function App() {
 
   const progress = Math.round((completed.length / modules.length) * 100)
 
+  const copyPageLink = async () => {
+    await navigator.clipboard.writeText(PAGE_LINK)
+    setCopiedPageLink(true)
+    trackInteraction({
+      category: 'navigation',
+      action: 'copy',
+      label: 'brand-page-link',
+    })
+    window.setTimeout(() => setCopiedPageLink(false), 1800)
+  }
+
   return (
     <>
       <a className="skip-link" href="#main-content">
@@ -171,21 +186,17 @@ function App() {
       </a>
 
       <header className="site-header">
-        <a
+        <button
+          type="button"
           className="brand"
-          href="#top"
-          aria-label="Secure GitHub Copilot agents home"
-          onClick={() =>
-            trackInteraction({
-              category: 'navigation',
-              action: 'click',
-              label: 'brand-home',
-            })
-          }
+          aria-label={copiedPageLink ? 'Page link copied' : 'Copy page link'}
+          title={`Copy ${PAGE_LINK}`}
+          onClick={copyPageLink}
         >
           <span><ShieldCheckIcon /></span>
           <strong>Secure Copilot agents</strong>
-        </a>
+          {copiedPageLink ? <CheckIcon /> : <CopyIcon />}
+        </button>
 
         <div className="header-controls">
           <div className="compact-control" aria-label="Audience">
